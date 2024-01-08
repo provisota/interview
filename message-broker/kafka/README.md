@@ -14,72 +14,13 @@ reliability, and scalability.
 
 ## Data Storage and Distribution
 
-- **Log Structure**: Each partition is an ordered, immutable sequence of records known as a log. Each record in a
-  partition is assigned a unique offset.
-- **Replication**: Kafka replicates partitions across multiple brokers for fault tolerance. One broker serves as the
-  leader for a given partition, handling all reads and writes, while others are followers that replicate the leader.
-- **Retention Policy**: Kafka stores records for a configurable period, after which old records are discarded. Data can
-  be retained based on time or size.
-
-### Log structure
-
-Apache Kafka's log structure is a core aspect of its design, enabling its high throughput, scalability, and
-fault-tolerance capabilities.
-
-#### Basic Concept
-
-- **Log**: In Kafka, a log is an ordered set of records (messages), differing from the traditional idea of logging
-  messages.
-- **Partition**: Each Kafka topic is split into one or more partitions, with each partition essentially being a log.
-
-#### Partition Log Structure
-
-- **Segments**: A partition's log is divided into segments, each being a physical file on the disk.
-- **Immutable Records**: Records within a segment are immutable, enabling efficient writes and reads due to their
-  append-only nature.
-
-#### Offset Management
-
-- **Offsets**: Records in a log are identified by sequential IDs called offsets, unique within each partition.
-- **Commit Log**: Kafka operates as a commit log, appending every record sent to a partition at the end of the log.
-
-#### File Storage
-
-- **File Naming**: Segment files are named to reflect their offsets, aiding in quick identification.
-- **Index Files**: Kafka maintains index files for each log segment, mapping offsets to file positions for rapid record
-  location.
-
-#### Segment Size and Retention
-
-- **Configuration**: The maximum size of log segment files is configurable. Once this size is reached, a new segment is
-  created.
-- **Retention Policy**: Retention policies, based on time or size, govern the deletion of old segments.
-
-#### Compaction
-
-- **Log Compaction**: Kafka features log compaction for topics, keeping only the latest value for each key and removing
-  older duplicates.
-
-#### Replication
-
-- **Leader and Followers**: Each partition has a leader and follower replicas, with the leader handling all read and
-  write requests.
-- **Consistency**: Followers replicate the leader's log for consistency, and a follower can become a new leader in case
-  of leader failure.
-
-#### Performance Implications
-
-- **Write Efficiency**: The append-only log allows for faster sequential disk writes.
-- **Read Efficiency**: Sequential disk reads are efficient, complemented by indexes for quick message access.
-
-#### Durability
-
-- **Sync and Flush**: Producers can choose the level of durability for their records, either immediate disk writes or
-  temporary memory caching.
-
-Kafka's log structure is key to its ability to provide high throughput and reliable data storage and retrieval. This
-structure, along with Kafka's distributed nature, makes it highly effective for large-scale, real-time data streaming
-and processing.
+- **[Log Structure](./log-structure.md)**: Each partition is an ordered, immutable sequence of records known as a
+  log. Each record in a partition is assigned a unique offset.
+- **[Replication](./replication.md)**: Kafka replicates partitions across multiple brokers for fault tolerance. One
+  broker serves as the leader for a given partition, handling all reads and writes, while others are followers that
+  replicate the leader.
+- **[Retention Policy](./retention-policy.md)**: Kafka stores records for a configurable period, after which old records
+  are discarded. Data can be retained based on time or size.
 
 ## Producer Details
 
@@ -98,22 +39,32 @@ and processing.
 ## Reliability and Durability
 
 - **Fault Tolerance**: Kafka's replication ensures that data is not lost if a broker fails.
-- **Exactly-once Semantics (EOS)**: Kafka supports exactly-once processing semantics to prevent data duplication.
+- **[Exactly-once Semantics](semantics/exactly-once_semantics.md) (EOS)**: Kafka supports exactly-once processing semantics to prevent data 
+  duplication.
+
+## Semantics
+
+- **[At Least Once](semantics/at-least-once_semantics.md)**: Kafka guarantees that a message will be delivered at least once to a consumer.
+- **[At Most Once](semantics/at-most-once_semantics.md)**: Kafka guarantees that a message will be delivered at most once to a consumer.
+- **[Exactly Once](semantics/exactly-once_semantics.md)**: Kafka guarantees that a message will be delivered exactly once to a consumer.
+
+[Comparison](semantics/README.md#semantics-comparison)
 
 ## Scalability
 
 - **Horizontal Scaling**: Kafka clusters can be expanded without downtime. New brokers can be added, and Kafka will
-  rebalance partitions across the cluster.
+  [rebalance](./cluster-rebalancing.md) partitions across the cluster.
 
 ## Performance Optimization
 
-- **Batch Processing**: Producers and consumers can operate in batch mode, improving throughput.
-- **Compression**: Kafka supports message compression.
+- **[Batch Processing](./batch-processing.md)**: Producers and consumers can operate in batch mode, improving throughput.
+- **[Compression](compression.md)**: Kafka supports message compression.
 
 ## Security
 
 - **Authentication**: Kafka supports authentication via SSL or SASL.
-- **Authorization**: Access control can be managed using Access Control Lists (ACLs).
+- **Authorization**: Access control can be managed using
+  [Access Control Lists](../../security/authentication-and-authorization.md#access-control-lists-acls) (ACLs).
 - **Encryption**: Supports SSL/TLS for encrypting data in transit.
 
 ## Stream Processing
