@@ -39,14 +39,18 @@ reliability, and scalability.
 ## Reliability and Durability
 
 - **Fault Tolerance**: Kafka's replication ensures that data is not lost if a broker fails.
-- **[Exactly-once Semantics](semantics/exactly-once_semantics.md) (EOS)**: Kafka supports exactly-once processing semantics to prevent data 
+- **[Exactly-once Semantics](semantics/exactly-once_semantics.md) (EOS)**: Kafka supports exactly-once processing
+  semantics to prevent data
   duplication.
 
 ## Semantics
 
-- **[At Least Once](semantics/at-least-once_semantics.md)**: Kafka guarantees that a message will be delivered at least once to a consumer.
-- **[At Most Once](semantics/at-most-once_semantics.md)**: Kafka guarantees that a message will be delivered at most once to a consumer.
-- **[Exactly Once](semantics/exactly-once_semantics.md)**: Kafka guarantees that a message will be delivered exactly once to a consumer.
+- **[At Least Once](semantics/at-least-once_semantics.md)**: Kafka guarantees that a message will be delivered at least
+  once to a consumer.
+- **[At Most Once](semantics/at-most-once_semantics.md)**: Kafka guarantees that a message will be delivered at most
+  once to a consumer.
+- **[Exactly Once](semantics/exactly-once_semantics.md)**: Kafka guarantees that a message will be delivered exactly
+  once to a consumer.
 
 [Comparison](semantics/README.md#semantics-comparison)
 
@@ -57,7 +61,8 @@ reliability, and scalability.
 
 ## Performance Optimization
 
-- **[Batch Processing](./batch-processing.md)**: Producers and consumers can operate in batch mode, improving throughput.
+- **[Batch Processing](./batch-processing.md)**: Producers and consumers can operate in batch mode, improving
+  throughput.
 - **[Compression](compression.md)**: Kafka supports message compression.
 
 ## Security
@@ -69,16 +74,17 @@ reliability, and scalability.
 
 ## Stream Processing
 
-- **Kafka Streams**: A client library for building applications and microservices where input and output data are stored
-  in Kafka clusters.
+- **[Kafka Streams](kafka-streams.md)**: A client library for building applications and microservices where input and
+  output data are stored in Kafka clusters.
 
 ## Connectors and Integration
 
-- **Kafka Connect**: A tool for scalably and reliably streaming data between Apache Kafka and other systems.
+- **[Kafka Connect](kafka-connect.md)**: A tool for scalable and reliably streaming data between Apache Kafka and other
+  systems.
 
 ## Ecosystem and Tooling
 
-- **Schema Registry**: For managing and evolving schemas effectively.
+- **[Schema Registry](schema-registry.md)**: For managing and evolving schemas effectively.
 - **KSQL**: A SQL-like language for streaming processing on top of Kafka.
 
 Apache Kafka is designed to handle high volumes of data and support real-time data processing, making it a key component

@@ -65,7 +65,7 @@ more details on various load balancing techniques:
 - **Limitations**: More complex to implement and can introduce additional processing overhead.
 
 Application Layer Load Balancing, also known as Layer 7 Load Balancing, operates at the highest level of
-the [OSI model](../network/OSI.md#application-layer-layer-7). It not only routes traffic based on server capacity but can also make intelligent
+the [OSI model](../network/osi-model#application-layer-layer-7). It not only routes traffic based on server capacity but can also make intelligent
 decisions based on the content of the client requests.
 
 ### Operation at Layer 7 of the OSI Model
@@ -150,7 +150,7 @@ and management to harness its full potential.
 ## Network Layer Load Balancing
 
 - **Mechanism**: Operates at the transport layer (Layer 4 of the [OSI
-  model](../network/OSI.md#transport-layer-layer-4)) and makes decisions based on IP address and port number.
+  model](../network/osi-model#transport-layer-layer-4)) and makes decisions based on IP address and port number.
 - **Use Case**: Suited for straightforward routing requirements where application-level inspection is not needed.
 - **Limitations**: Less flexible compared to application layer load balancing, as it doesn't consider the content of the
   messages.

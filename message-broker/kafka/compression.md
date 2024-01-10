@@ -4,7 +4,7 @@ Apache Kafka's support for message compression is a critical feature for optimiz
 by reducing the size of the data transmitted over the network and stored on disk. Compression can lead to improved
 throughput and better utilization of storage and network resources.
 
-## Basic Concept of Compression in Kafka
+## Basic Concept
 
 - **Purpose**: To reduce the size of the message payloads transmitted between producers, brokers, and consumers.
 - **Supported Compression Types**: Kafka supports several compression codecs, including GZIP, Snappy, LZ4, and
