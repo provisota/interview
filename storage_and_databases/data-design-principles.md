@@ -12,11 +12,12 @@ it's a traditional relational database, a NoSQL database, or a file storage syst
 be considered.
 
 1. **Data Modeling**:
-    - Relational Databases: 
-      - **Normalization**: The process of organizing data in a database to reduce redundancy and improve data integrity.
-        Involves using normal forms to ensure that each table represents one entity type.
-      - **Entity-Relationship Modeling**: A method to visually represent data entities and relationships, useful for
-        conceptualizing and planning database structures.
+    - Relational Databases:
+        - **Normalization**: The process of organizing data in a database to reduce redundancy and improve data
+          integrity.
+          Involves using normal forms to ensure that each table represents one entity type.
+        - **Entity-Relationship Modeling**: A method to visually represent data entities and relationships, useful for
+          conceptualizing and planning database structures.
     - NoSQL Databases: Design based on data access patterns, considering the strengths and limitations of the specific
       NoSQL type (document, key-value, columnar, graph).
 
