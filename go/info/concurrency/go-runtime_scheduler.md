@@ -275,19 +275,327 @@ synchronization.
 
 ## Goroutine Yielding
 
+In Go, goroutines are cooperatively scheduled, meaning that a goroutine continues to run until it voluntarily yields
+control. This yielding of control can happen implicitly or explicitly. Unlike preemptive threading models where the
+operating system decides when a thread should yield, in Go, the goroutine has more control over its own scheduling.
+
+### Implicit Yielding
+
+Goroutines yield control to the scheduler implicitly in several scenarios:
+
+1. **Blocking on I/O**: When a goroutine performs I/O operations such as reading from a file or a network connection, it
+   yields as these operations are blocking. The Go runtime scheduler then schedules another goroutine to run.
+
+2. **Blocking on Channels**: When a goroutine tries to send/receive on a channel and if the operation cannot proceed
+   immediately (e.g., sending on a full channel or receiving from an empty one), the goroutine yields.
+
+3. **Blocking on Synchronization Primitives**: If a goroutine is blocked waiting on synchronization primitives like
+   mutexes (`sync.Mutex`) or waiting groups (`sync.WaitGroup`), it yields.
+
+4. **System Calls and Sleeping**: Goroutines yield when making certain system calls or when calling `time.Sleep`.
+
+5. **Garbage Collection**: Goroutines may yield during garbage collection cycles.
+
+### Explicit Yielding
+
+Explicit yielding can be achieved using:
+
+1. **`runtime.Gosched()`:** This function is a way to yield the processor, allowing other goroutines to run. It doesn't
+   suspend the current goroutine, which continues execution almost immediately, but it does allow other goroutines on
+   the same thread to proceed.
+
+    ```go
+    go func() {
+        for {
+            doWork()
+            runtime.Gosched() // Yield the processor
+        }
+    }()
+    ```
+
+   Using `runtime.Gosched()` is generally not necessary and should be used judiciously. It's useful in cases where a
+   goroutine might otherwise block other goroutines from running due to tight loops or heavy computation.
+
+2. **`select` with `default`**: In a `select` statement without any blocking cases, the `default` case can be used to
+   yield.
+
+    ```go
+    select {
+    case <-someChan:
+        // perform operation
+    default:
+        // Yield
+    }
+    ```
+
+### Preemption
+
+Since Go 1.14, the scheduler has the ability to preempt long-running goroutines at certain safe points, effectively
+introducing a form of cooperative multitasking with a safety net to prevent any single goroutine from monopolizing the
+CPU.
+
+### Best Practices
+
+- **Avoid Tight Loops**: In a tight loop, a goroutine may not yield control, leading to issues like starvation of other
+  goroutines. It's good practice to avoid such constructs or use explicit yielding if necessary.
+
+- **Rely on Implicit Yielding**: In most cases, Go's runtime handles yielding efficiently, and explicit intervention is
+  not needed.
+
+- **Understand Runtime Behavior**: Knowing how and when goroutines yield is crucial for writing efficient concurrent Go
+  programs, especially in applications where performance and resource utilization are critical.
+
+In summary, while Go provides mechanisms for explicit yielding, its runtime is designed to manage goroutine scheduling
+efficiently without much need for direct intervention from the programmer.
+
 ## Goroutine Preemption
+
+Goroutine preemption in Go is a mechanism by which the Go runtime scheduler can interrupt the execution of a goroutine
+and switch to running another goroutine. This feature is crucial for ensuring that long-running or compute-intensive
+goroutines do not monopolize the CPU, thereby allowing other goroutines to run in a timely manner.
+
+### Evolution of Preemption in Go
+
+- **Before Go 1.14**: Prior to version 1.14, goroutine preemption in Go was somewhat cooperative. A goroutine would
+  yield to the scheduler only at specific points, such as when performing a blocking operation (like I/O, channel
+  operations, or acquiring a mutex). This meant that if a goroutine entered a long-running computation without such
+  operations, it could potentially run for an extended period without yielding, leading to latency issues in other
+  goroutines.
+
+- **Go 1.14 and Later**: Starting with Go 1.14, the scheduler introduced asynchronous preemption. This means goroutines
+  can be preempted at almost any point in their execution, not just at well-defined points like I/O operations or
+  channel sends/receives. This was a significant improvement in the Go scheduler, enhancing the responsiveness and
+  fairness of the scheduling system.
+
+### How Preemption Works in Go 1.14+
+
+1. **Safe-Point Preemption**: Preemption occurs at "safe points," which are points in the code where the runtime has
+   precise information about the goroutine's state. This typically happens when a function call occurs.
+
+2. **Implementation via Asynchronous Signals**: The Go runtime periodically sends asynchronous signals to the thread (M)
+   executing a goroutine. When the thread receives this signal, if the current goroutine is at a safe point, it gets
+   preempted, and the scheduler can choose another goroutine to run.
+
+3. **Impact on Long-Running Computations**: With the introduction of asynchronous preemption, long-running computations
+   or tight loops no longer block the scheduler indefinitely. They can be preempted, improving the ability of other
+   goroutines to get CPU time.
+
+### Implications of Preemption
+
+- **Improved Fairness**: The scheduler can more fairly distribute CPU time across goroutines, improving the
+  responsiveness of Go applications.
+
+- **Reduced Latency for Goroutines**: Applications with goroutines that perform long computations will experience
+  reduced latency in other goroutines waiting to run.
+
+- **No Changes in Goroutine Coding Practices**: For Go developers, this change in the scheduler is transparent. The way
+  goroutines are coded remains the same, as preemption is handled entirely by the runtime.
+
+### Considerations
+
+- **Not Real-Time**: While preemption improves the scheduling fairness, Go is still not suitable for hard real-time
+  systems due to the non-deterministic nature of the scheduler and garbage collector.
+
+- **Safe Points and Function Calls**: The reliance on safe points means that extremely tight loops with no function
+  calls might still lead to delayed preemption.
+
+In summary, goroutine preemption in Go, especially since version 1.14, provides a more responsive and fair scheduling
+system, enhancing the concurrency model of the language without requiring changes in the way developers write
+goroutines.
 
 ## Goroutine Stacks
 
+Goroutines in Go are famous for their lightweight nature, partly due to how their stacks are managed. Unlike traditional
+threads in many other programming languages, which often start with a large stack space (often in the order of
+megabytes), goroutines begin with a much smaller stack size. This efficient management of stack space is key to allowing
+Go programs to spawn thousands of goroutines simultaneously without consuming excessive amounts of memory.
+
+### Initial Stack Size and Dynamic Growth
+
+1. **Initial Size**: As of my last update, a goroutine in Go starts with a small stack, typically a few
+   kilobytes in size (the exact size has evolved across Go versions. In Go 2.14 the size is 2048 bytes).
+
+2. **Dynamic Growth**: The stack can grow (and shrink) dynamically at runtime as needed. When a goroutine's stack
+   reaches its limit, the runtime allocates a new, larger stack and copies the existing stack's contents to the new
+   stack. This process is often referred to as "stack copying" or "stack splitting."
+
+3. **Segmented Stacks vs. Continuous Growth**: Earlier versions of Go used segmented stacks, but the current
+   implementation favors a continuous stack that grows dynamically. This approach simplifies the runtime and reduces the
+   overhead of managing multiple stack segments.
+
+### How Stack Growth is Triggered
+
+- Stack growth is typically triggered by function calls. When a function is called, the runtime checks whether there is
+  enough space on the stack for the function's local variables and for the function call itself. If there isn't enough
+  space, a larger stack is allocated, and the contents are moved.
+
+- This check-and-grow mechanism ensures that the stack grows only when necessary, making goroutines memory-efficient.
+
+### Advantages of Goroutine Stacks
+
+1. **Memory Efficiency**: The small initial size and dynamic growth of goroutine stacks mean that Go programs can manage
+   a large number of goroutines with a relatively small memory footprint.
+
+2. **Scalability**: Because of their lightweight nature, goroutines enable highly scalable concurrent programming. You
+   can have thousands, or even tens of thousands, of goroutines running concurrently without overwhelming system
+   resources.
+
+3. **Simplicity**: From the programmer's perspective, this behavior is transparent. You don't need to manage stack sizes
+   or growth, as the runtime handles this automatically.
+
+### Challenges and Considerations
+
+- **Stack Overflows**: While rare, stack overflows can still occur if a goroutine's stack grows beyond a certain limit.
+  The Go runtime sets a maximum stack size (which has evolved across versions, but is significantly larger than the
+  initial stack size) to prevent excessive stack growth. Max size for 64-bit is **1Gb** and for 32-bit **256Mb**.
+
+- **Performance Overhead**: While typically minimal, the process of growing the stack has a performance cost. This is
+  usually negligible but can be more noticeable in deeply recursive functions or in scenarios with tight loops calling
+  many functions.
+
+- **Debugging**: Understanding stack traces in Go can be more complex due to stack growth, especially when dealing with
+  panics or stack-related errors.
+
+- **Limitations in C-Go Interoperability**: When calling C functions using cgo, stack management becomes more complex
+  since C functions don't have the same stack growth mechanism as Go functions. This requires careful consideration to
+  avoid stack overflows when using large amounts of stack space in C functions.
+
+### Best Practices
+
+1. **Avoid Deep Recursion**: Prefer iterative solutions over deep recursion where possible, as recursion can lead to
+   rapid stack growth.
+
+2. **Mindful Use of Goroutines**: While it's tempting to use goroutines liberally due to their lightweight nature, it's
+   still important to use them judiciously, especially in applications where memory usage is a concern.
+
+3. **Understand Runtime Behavior**: Being aware of how the Go runtime manages goroutine stacks can help in optimizing
+   performance and diagnosing issues related to memory usage.
+
+In summary, Go's handling of goroutine stacks is a cornerstone of its concurrency model, enabling efficient, scalable,
+and concurrent applications. This system is largely transparent to the developer, but an understanding of its workings
+can be beneficial in optimizing and debugging Go programs.
+
 ## Goroutine Scheduling Events
+
+Goroutine scheduling in Go is governed by specific events that can cause a goroutine to be scheduled, descheduled, or
+rescheduled. These events are integral to understanding how concurrency works in Go and how goroutines interact with the
+Go scheduler. Here's an overview of key scheduling events:
+
+### 1. Goroutine Creation
+
+- **Event**: When a new goroutine is created using the `go` keyword.
+- **Action**: The new goroutine is placed in the local run queue of the current `P` (processor).
+- **Effect**: If there's an available `M` (machine, i.e., thread), it will pick up the goroutine for execution.
+
+### 2. System Calls
+
+- **Event**: When a goroutine makes a system call that could block (e.g., file or network operations).
+- **Action**: The `M` executing the goroutine is blocked, but the `P` is detached and can be assigned to another `M`.
+- **Effect**: This prevents the blocking system call from halting other goroutines' execution.
+
+### 3. Channel Operations
+
+- **Event**: Operations on channels (send/receive) where the other side of the channel is not ready.
+- **Action**: The goroutine is descheduled and placed in the wait queue of the channel.
+- **Effect**: It remains in the wait queue until the channel operation can proceed.
+
+### 4. Mutex Locking
+
+- **Event**: When a goroutine attempts to acquire a mutex (`sync.Mutex`) that is already locked.
+- **Action**: The goroutine is descheduled and enters a waiting state.
+- **Effect**: It will be rescheduled once the mutex becomes available.
+
+### 5. Sleeping
+
+- **Event**: Calls to `time.Sleep` or similar time-based blocking operations.
+- **Action**: The goroutine is descheduled and enters a timer-based waiting queue.
+- **Effect**: It will be rescheduled when the timer expires.
+
+### 6. Goroutine Termination
+
+- **Event**: When a goroutine finishes its execution.
+- **Action**: The goroutine is removed from the execution context.
+- **Effect**: Resources used by the goroutine are freed.
+
+### 7. Preemption
+
+- **Event**: As of Go 1.14, goroutines can be preempted to prevent them from monopolizing the CPU.
+- **Action**: The scheduler may preempt a long-running goroutine at a safe point.
+- **Effect**: This allows other goroutines to get CPU time, improving responsiveness and fairness.
+
+### 8. Network Poller Integration
+
+- **Event**: In case of network I/O operations, the network poller plays a role.
+- **Action**: Goroutines waiting for network I/O are parked in the network poller.
+- **Effect**: They are rescheduled when I/O is ready, without blocking an `M`.
+
+### 9. Garbage Collection
+
+- **Event**: During garbage collection cycles.
+- **Action**: Goroutines may be paused temporarily.
+- **Effect**: This is to ensure that garbage collection can proceed safely.
+
+### Understanding Scheduling Events
+
+- **Fair Scheduling**: The Go scheduler aims to fairly distribute CPU time among goroutines, and these scheduling events
+  ensure that no single goroutine can block the progress of others.
+- **Efficiency**: By descheduling goroutines during blocking operations and efficiently managing CPU-bound operations,
+  the Go scheduler allows for high concurrency with minimal overhead.
+- **Developer Transparency**: For the most part, these scheduling details are abstracted away from the developer,
+  providing a simple and powerful concurrency model.
+
+Being aware of these events can be especially useful when debugging concurrency issues or optimizing performance in Go
+applications.
 
 ### Goroutine Scheduling in Practice
 
-### Goroutine Scheduling Best Practices
+Goroutine scheduling in Go, in actual practice, involves a few key concepts that enable efficient execution of
+concurrent operations. Here's a closer look at how it works and the implications for Go developers:
 
-## Goroutine Local Storage
+#### Efficient Concurrency
 
-### Goroutine Local Storage Best Practices
+1. **Lightweight Goroutines**: Goroutines are lightweight and have small initial stack sizes. This design allows you to
+   create thousands of goroutines without consuming large amounts of system memory.
+
+2. **M:N Scheduling**: The Go runtime schedules M goroutines onto N OS threads (where typically, N is less than or equal
+   to the number of cores). This multiplexing is done by the runtime and is transparent to the developer.
+
+3. **Non-Blocking by Design**: Go encourages writing non-blocking code, particularly with its built-in features like
+   channels and select statements. This approach avoids blocking an entire thread, allowing other goroutines to execute.
+
+#### Real-World Scenarios
+
+1. **I/O Bound Operations**: During network or disk I/O, which are common blocking operations, the Go runtime
+   automatically suspends the involved goroutine and resumes it when the I/O operation is complete. This ensures that
+   the thread is free to execute other goroutines.
+
+2. **CPU Bound Operations**: For CPU-intensive tasks, Go’s runtime preempts long-running goroutines at certain safe
+   points to ensure other goroutines get CPU time. This is especially useful to prevent one goroutine from monopolizing
+   the CPU.
+
+#### Best Practices and Considerations
+
+1. **Concurrency vs Parallelism**: Go makes it easy to write concurrent programs, but parallel execution depends on the
+   runtime and the environment. It’s important to design your program with this distinction in mind.
+
+2. **Proper Synchronization**: Even though Go handles low-level scheduling, you still need to synchronize shared data
+   access using mutexes, channels, or other synchronization mechanisms to avoid race conditions.
+
+3. **Resource Utilization**: While goroutines are cheap, they aren't free. It's important to understand the resource
+   implications of spawning a large number of goroutines and to use patterns like worker pools to manage resource usage.
+
+4. **Error Handling**: In concurrent Go programs, managing and propagating errors properly is crucial. Channels are
+   often used for this purpose, allowing errors to be returned from goroutines to the main execution flow.
+
+5. **Debugging and Profiling**: Tools like the Go runtime tracer (`runtime/trace`) and pprof can be very helpful in
+   understanding how goroutines behave in your application, particularly in identifying bottlenecks or deadlock
+   situations.
+
+#### Conclusion
+
+Goroutine scheduling in Go is a powerful feature that allows developers to write highly concurrent applications in an
+efficient and relatively simple manner. By understanding and leveraging the Go runtime's capabilities, you can create
+robust, scalable, and maintainable concurrent applications.
 
 ## Best Practices
 

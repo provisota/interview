@@ -1,0 +1,1 @@
+# Decompose by Subdomain or DDD (Domain-Driven Development)
