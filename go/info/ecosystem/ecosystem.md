@@ -1,3 +1,51 @@
+<!-- TOC -->
+* [Go Ecosystem](#go-ecosystem)
+  * [Go Standard Commands](#go-standard-commands)
+    * [Go Standard Commands](#go-standard-commands-1)
+      * [Technical Details](#technical-details)
+      * [Best Practices](#best-practices)
+      * [Example: Basic Go Commands](#example-basic-go-commands)
+      * [Conclusion](#conclusion)
+  * [Dependency Management (go.mod)](#dependency-management-gomod)
+    * [Dependency Management in GoLang (go.mod)](#dependency-management-in-golang-gomod)
+      * [Technical Details](#technical-details-1)
+      * [Best Practices](#best-practices-1)
+      * [Example: Creating and Managing a Go Module](#example-creating-and-managing-a-go-module)
+      * [Conclusion](#conclusion-1)
+  * [Linters](#linters)
+    * [Linters in GoLang](#linters-in-golang)
+      * [Technical Details](#technical-details-2)
+      * [Best Practices](#best-practices-2)
+      * [Example: Using `golint` and `go vet`](#example-using-golint-and-go-vet)
+      * [Conclusion](#conclusion-2)
+  * [Profiling and Tracing](#profiling-and-tracing)
+    * [Profiling and Tracing in GoLang](#profiling-and-tracing-in-golang)
+      * [Technical Details](#technical-details-3)
+      * [Best Practices](#best-practices-3)
+      * [Example: CPU Profiling in a Go Program](#example-cpu-profiling-in-a-go-program)
+      * [Conclusion](#conclusion-3)
+  * [GOPRIVATE](#goprivate)
+    * [GOPRIVATE in GoLang](#goprivate-in-golang)
+      * [Technical Details](#technical-details-4)
+      * [Best Practices](#best-practices-4)
+      * [Example: Setting GOPRIVATE](#example-setting-goprivate)
+      * [Conclusion](#conclusion-4)
+  * [GOSUMDB](#gosumdb)
+    * [GOSUMDB in GoLang](#gosumdb-in-golang)
+      * [Technical Details](#technical-details-5)
+      * [Best Practices](#best-practices-5)
+      * [Example: Setting GOSUMDB](#example-setting-gosumdb)
+      * [Conclusion](#conclusion-5)
+  * [GOPROXY](#goproxy)
+    * [GOPROXY in GoLang](#goproxy-in-golang)
+      * [Technical Details](#technical-details-6)
+      * [Best Practices](#best-practices-6)
+      * [Example: Configuring GOPROXY](#example-configuring-goproxy)
+      * [Conclusion](#conclusion-6)
+* [Questions](#questions)
+* [Answers](#answers)
+<!-- TOC -->
+
 # Go Ecosystem
 
 ## Go Standard Commands
@@ -425,25 +473,3 @@ export GOPROXY=direct
 #### Conclusion
 
 `GOPROXY` is an integral part of Go's module system, significantly enhancing the efficiency of dependency management. It streamlines the process of fetching modules, especially for projects with a large number of dependencies, and provides a fallback mechanism for module retrieval. Appropriately configuring `GOPROXY` is a key step in setting up a GoLang development environment, particularly in organizational or team settings.
-
-# Questions
-1. How does Golang manage its dependencies?
-2. What native Golang tools do you know? (get, build, format, test, etc)
-3. How to host third-party library locally (for debug or development purpose)?
-4. What types of imports do you know?
-5. Which go static analysis tools do you know? What are the differences between them?
-6. What build flags do you know?
-7. What are profiling and tracing used for? In case of pprof explain, how do you work with it?
-8. Describe project structure you would use for library/service/application? Describe pros/cons.
-9. What are GOPROXY, GOPRIVATE and GOSUMDB used for?
-
-# Answers
-1. Go manages its dependencies using the `go.mod` file. This file defines the module’s module path and its dependency requirements.
-2. Native Go tools include `go get` for fetching and installing packages, `go build` for compiling Go sources, `go test` for running tests, and many more.
-3. To host a third-party library locally, you can clone the repository and use `replace` directive in the `go.mod` file to redirect to your local copy.
-4. Go has two types of imports: standard library imports and third-party imports.
-5. Go static analysis tools include `golint` for style checks, `go vet` for examining code for common mistakes, and `staticcheck` for detecting bugs and performance issues.
-6. Build flags in Go include `-o` for specifying the output file name, `-i` for installing packages, `-v` for verbose output, and many more.
-7. Profiling and tracing are used for performance tuning in Go. The `pprof` package provides tools for profiling and tracing Go programs.
-8. A typical Go project structure includes directories for `cmd`, `pkg`, `api`, `web`, `scripts`, etc. This structure helps in separating concerns, making the project easier to navigate and maintain.
-9. `GOPROXY` is used to specify a Go proxy service, `GOPRIVATE` is used to bypass the proxy for private modules, and `GOSUMDB` is used to specify a checksum database.
