@@ -54,8 +54,7 @@ func main() {
 ## Use of Pointers in GoLang
 
 **Passing by Reference** - When you pass a variable to a function by value, Go copies the value. But if you pass
-a pointer, the function can
-modify the original variable.
+a pointer, the function can modify the original variable.
 
 **Working with Large Data** - For large data structures, using pointers is more efficient as it avoids copying large
 amounts of data.
